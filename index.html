@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Naeem Khan">
+  <meta name="description"
+    content="Advanced alarm clock web app with multiple alarms, customizable sounds, volume control, and repeat functionality.">
+  <meta name="keywords" content="alarm, clock, timer, javascript, web app, alarms, digital clock, reminder">
+  <meta name="robots" content="index, follow">
+  <meta name="project" content="Advanced Alarm Clock">
+  <title>Advanced Alarm Clock</title>
+  <style>
+    /* GLOBAL PAGE STYLE */
+    body {
+      font-family: sans-serif;
+      background: #222;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 15px;
+    }
+
+    /* DIGITAL CLOCK */
+    .clock {
+      font-size: 3rem;
+      margin-bottom: 25px;
+    }
+
+    .digital-time {
+      font-weight: bold;
+    }
+
+    /* FORM LAYOUT */
+    #alarmForm {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      max-width: 750px;
+    }
+
+    /* form controls */
+    #alarmForm input,
+    #alarmForm select,
+    #alarmForm button {
+      width: 180px;
+      height: 36px;
+      background: #ddd;
+      color: #05f;
+      border: 3px solid yellowgreen;
+      border-radius: 10px;
+      padding: 4px 8px;
+      font-size: 14px;
+    }
+
+    /* submit button */
+    #alarmForm button {
+      background: #ff0;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* VOLUME SLIDER */
+    #volumeInput {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 180px;
+      height: 20px;
+      transform-origin: center;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    /* Chrome / Edge / Safari */
+    #volumeInput::-webkit-slider-runnable-track {
+      height: 10px;
+      background: aqua;
+      border-radius: 10px;
+      border: 2px solid yellowgreen;
+    }
+
+    #volumeInput::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: gold;
+      border: 2px solid orange;
+      border-radius: 50%;
+      cursor: pointer;
+      margin-top: -6px;
+    }
+
+    /* Firefox */
+    #volumeInput::-moz-range-track {
+      height: 10px;
+      background: aqua;
+      border-radius: 10px;
+      border: 2px solid yellowgreen;
+    }
+
+    #volumeInput::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: gold;
+      border: 2px solid orange;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* ALARM LIST */
+    #alarmList {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+      width: 350px;
+    }
+
+    #alarmList li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 12px;
+      margin: 8px 0;
+      background: #333;
+      border: 3px solid pink;
+      border-radius: 10px;
+    }
+
+    #alarmList input[type="checkbox"] {
+      transform: scale(1.2);
+      cursor: pointer;
+    }
+
+    .delbtn,
+    .editbtn,
+    #stopAlarmBtn {
+      width: 70px;
+      background: antiquewhite;
+      border: 3px solid pink;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- DIGITAL CLOCK -->
+  <div class="clock">
+    <span class="digital-time">00:00:00</span>
+  </div>
+
+  <!-- ALARM INPUT FORM -->
+  <form id="alarmForm">
+    <input type="number" id="hourInput" min="0" max="23" placeholder="Hour (0-23)" required />
+    <input type="number" id="minuteInput" min="0" max="59" placeholder="Minute (0-59)" required />
+    <input type="text" id="labelInput" placeholder="Alarm Label" required />
+
+    <!-- alarm sound -->
+    <select id="soundSelect">
+      <option value="audio/air_raid_siren.mp3">Air Raid Siren</option>
+      <option value="audio/birdsong.mp3">Birdsong</option>
+      <option value="audio/classic_clock.mp3">Classic Clock</option>
+      <option value="audio/simple_tone.mp3">Simple Tone</option>
+      <option value="audio/coffee.mp3">Coffee Reminder</option>
+      <option value="audio/extreme_clock.mp3">Extreme Clock</option>
+      <option value="audio/fire_alarm.mp3">Fire Alarm</option>
+      <option value="audio/clock_chime.mp3">Clock Chime</option>
+      <option value="audio/heavy_sleeper.mp3">Heavy Sleeper</option>
+      <option value="audio/in_the_end.mp3">In The End</option>
+      <option value="audio/iphone.mp3">iPhone</option>
+      <option value="audio/loud.mp3">Loud</option>
+      <option valueassets/audio-files/wake_up.mp3="audio/loudest.mp3">Loudest</option>
+      <option value="audio/morning_flower.mp3">Morning Flower</option>
+      <option value="audio/samsung.mp3">Samsung</option>
+      <option value="audio/soft_wake_up.mp3">Soft Wake Up</option>
+      <option value="audio/wake_up.mp3">Wake Up</option>
+    </select>
+
+    <button type="button" id="stopAlarmBtn" style="display: none">STOP ALARM</button>
+    <input type="range" id="volumeInput" min="0" max="1" step="0.1" value="0.8" />
+    <input type="number" id="repeatInput" min="0" placeholder="Repeat after X min" />
+    <button type="submit">Add Alarm</button>
+  </form>
+
+  <!-- ALARM LIST -->
+  <h3>Alarms</h3>
+  <ul id="alarmList"></ul>
+
+  <script>
+    /* GLOBAL VARIABLES USED IN ALARM TRIGGER */
+    let alarmAudio = null;
+    let nextAlarmTimer = null;
+
+    /* DOM ELEMENTS */
+    const alarmForm = document.getElementById("alarmForm");
+    const hourInput = document.getElementById("hourInput");
+    const minuteInput = document.getElementById("minuteInput");
+    const labelInput = document.getElementById("labelInput");
+    const soundSelect = document.getElementById("soundSelect");
+    const volumeInput = document.getElementById("volumeInput");
+    const repeatInput = document.getElementById("repeatInput");
+    const alarmList = document.getElementById("alarmList");
+    const digitalTime = document.querySelector(".digital-time");
+    const stopBtn = document.getElementById("stopAlarmBtn");
+
+    /* LOAD / SAVE */
+    let alarms = [];
+    function loadAlarms() {
+      const data = localStorage.getItem("alarms");
+      if (data) alarms = JSON.parse(data);
+      renderAlarms();
+      scheduleNextAlarm();
+    }
+    function saveAlarms() {
+      localStorage.setItem("alarms", JSON.stringify(alarms));
+    }
+
+    /* RENDER UI */
+    function renderAlarms() {
+      alarmList.innerHTML = "";
+      alarms.forEach(alarm => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span>${alarm.hour.toString().padStart(2, "0")}:${alarm.minute.toString().padStart(2, "0")} - ${alarm.label}</span>`;
+
+        const toggle = document.createElement("input");
+        toggle.type = "checkbox";
+        toggle.checked = alarm.active;
+        toggle.addEventListener("change", () => {
+          alarm.active = toggle.checked;
+          saveAlarms();
+          scheduleNextAlarm();
+        });
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+        editBtn.classList.add("editbtn");
+        editBtn.addEventListener("click", () => loadAlarmIntoForm(alarm));
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Delete";
+        delBtn.className = "delbtn";
+        delBtn.addEventListener("click", () => {
+          alarms = alarms.filter(a => a.id !== alarm.id);
+          saveAlarms();
+          renderAlarms();
+          scheduleNextAlarm();
+        });
+
+        li.append(toggle, editBtn, delBtn);
+        alarmList.appendChild(li);
+      });
+    }
+
+    /* FORM SUBMIT */
+    let editingAlarmId = null;
+    function loadAlarmIntoForm(alarm) {
+      hourInput.value = alarm.hour;
+      minuteInput.value = alarm.minute;
+      labelInput.value = alarm.label;
+      soundSelect.value = alarm.sound;
+      volumeInput.value = alarm.volume;
+      repeatInput.value = alarm.repeat;
+      editingAlarmId = alarm.id;
+    }
+    alarmForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const alarmData = {
+        id: editingAlarmId || Date.now(),
+        hour: Number(hourInput.value),
+        minute: Number(minuteInput.value),
+        label: labelInput.value.trim(),
+        active: true,
+        sound: soundSelect.value,
+        volume: parseFloat(volumeInput.value),
+        repeat: parseInt(repeatInput.value) || 0
+      };
+      if (editingAlarmId) {
+        const idx = alarms.findIndex(a => a.id === editingAlarmId);
+        alarms[idx] = alarmData;
+        editingAlarmId = null;
+      } else {
+        alarms.push(alarmData);
+      }
+      saveAlarms();
+      renderAlarms();
+      scheduleNextAlarm();
+      alarmForm.reset();
+    });
+
+    /* DIGITAL CLOCK */
+    function runClock() {
+      const now = new Date();
+      const h = now.getHours().toString().padStart(2, "0");
+      const m = now.getMinutes().toString().padStart(2, "0");
+      const s = now.getSeconds().toString().padStart(2, "0");
+      digitalTime.textContent = `${h}:${m}:${s}`;
+      requestAnimationFrame(runClock);
+    }
+    requestAnimationFrame(runClock);
+
+    /* ALARM SCHEDULING */
+    function getNextAlarm() {
+      const now = new Date();
+      return alarms
+        .filter(a => a.active)
+        .map(a => {
+          const alarmTime = new Date();
+          alarmTime.setHours(a.hour, a.minute, 0, 0);
+          if (alarmTime <= now) alarmTime.setDate(alarmTime.getDate() + 1);
+          return { ...a, time: alarmTime };
+        })
+        .sort((a, b) => a.time - b.time)[0];
+    }
+    function scheduleNextAlarm() {
+      if (nextAlarmTimer) clearTimeout(nextAlarmTimer);
+      const next = getNextAlarm();
+      if (!next) return;
+      const delay = Math.max(next.time - new Date(), 0);
+      nextAlarmTimer = setTimeout(() => triggerAlarm(next), delay);
+    }
+
+    /* ALARM TRIGGER / STOP */
+    function triggerAlarm(alarm) {
+      if (alarmAudio) return;
+      alarmAudio = new Audio(alarm.sound);
+      alarmAudio.volume = alarm.volume;
+      alarmAudio.loop = true;
+      alarmAudio.play();
+
+      stopBtn.style.display = "block";
+      document.body.style.background = "#550";
+      setTimeout(() => document.body.style.background = "#222", 2000);
+
+      if (alarm.repeat > 0) {
+        const next = new Date();
+        next.setMinutes(next.getMinutes() + alarm.repeat);
+        alarm.hour = next.getHours();
+        alarm.minute = next.getMinutes();
+      } else {
+        alarm.active = false;
+      }
+      saveAlarms();
+      renderAlarms();
+    }
+    stopBtn.addEventListener("click", () => {
+      if (alarmAudio) {
+        alarmAudio.pause();
+        alarmAudio = null;
+      }
+      stopBtn.style.display = "none";
+      scheduleNextAlarm();
+    });
+
+    /* VOLUME CONTROL */
+    volumeInput.addEventListener("input", () => {
+      if (alarmAudio) alarmAudio.volume = volumeInput.value;
+    });
+
+    /* INITIALIZE */
+    loadAlarms();
+  </script>
+</body>
+
+</html>
